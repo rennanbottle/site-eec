@@ -33,7 +33,7 @@ import { DatabaseSync } from "node:sqlite";
 // src/config/env.ts
 import { z } from "zod";
 var envSchema = z.object({
-    NODE_ENV: z.enum(["development", "test", "production"]).default("development");
+    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     VERCEL_ENV: z.enum(["production", "preview", "development"]).optional(),
     PORT: z.coerce.number().int().positive().default(3e3),
     ALLOWED_ORIGINS: z.string().default("http://localhost:3000"),
@@ -58,6 +58,6 @@ function computeAppEnv(nodeEnv, vercelEnv) {
 function validateEnv(rawEnv = process.env) {
     const parseResult = envSchema.safeParse(rawEnv);
     if (!parseResult.success) {
-        const formattedErrors = parseResult.error.issues.map((issue) => `${issue.path.join(".")}`)
+        const formattedErrors = parseResult.error.issues.map((issue) => `${issue.path.join(".=")}`)
     }
 }
