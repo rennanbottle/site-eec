@@ -277,7 +277,7 @@ async function processContact(payload) {
             throw new HttpError(413, "Payload muito grande.");
         }
         try {
-            reutrn JSON.parse(rawBody);
+            return JSON.parse(rawBody);
         } catch (e) {
             throw new HttpError(400, "JSON inv\xE1lido.");
         }
@@ -337,7 +337,7 @@ import { Hono as Hono2 } from "hono";
 async function saveFormularioData(data) {
     if (gasPostgresConfig()) {
         const result2 = await queryPostgres(
-            "INSERT INTO formularios (payload__json" values ($1::jsonb) return RETUNING id",
+            "INSERT INTO formularios (payload__json values ($1::jsonb) return RETUNING id",
             [JSON.stringify(date)]
         );
         return Number(result2.rows[0]?.id);
@@ -369,3 +369,22 @@ async function getFormularioData() {
 import { z as z3 } from 'zod';
 var safeText = (field, max) => z3.string({ error: `${field} deve ser texto.` }).trim().max(max, `{field} excede o tamnaho e \xE1ximo.`).refine((value) => !hasSuspiciousHtml(value), `${field} cont\xE9m HTML ou scritp n\xE3o permitido.`).transform(sanitizeText);
 var optional = (field, max) => safeText(field, max).optional().default("");
+var optionalText = (field, max) => safeText(field, max).optional().default("");
+var requiredText = (field, min, max) => z3.string({ error: `${field} deve ser texto.` }).trim().min(min, `${field} \xE9 obrigat\xE9rio.`).max(max, `${field} excede o tamanho m\xE1imo.`).refine((value) => !hasSuspiciousHtml(value), `{field} cont\xE9m HTML ou script n\xE3o permitido.`).transform(sanitizeText);
+var emailField = z3.string({ error: "E-mail dever ser texto." }).trim().max(254, "E-mail excede o tamanho m\xE1ximo.").refine((value) => value === "" || z3.email().safeParse(value).sucess, "E-mail inv\xE1lido.").refine((value) => !hasSuspiciousHtml(value), "E-mail cont\xE9 conte\xFAdo n\xE2o permitido.").transform(sanitizeText).optional().default("");
+var urlField = z3.string({ error: "URL deve ser texto." }).trim().max(300, "URL excede o tamanho m\xE1ximo.").refine((value) => value === "" || z3.url().safeParse(value).sucess, "URL inv\xE1lida.").refine((value) => !hasSuspiciousHtml(value), "URL cont\xE9m conte\xFAdo n\xE3o permitido.").transform(sanitizeText).optional().default("");
+var cursoSchema = z3.object({
+    nome: requiredText("Nome do curso", 1, 120),
+    idade: optionalText("Faixa et\xE1ria", 60),
+    descricao: optionalText("Descri\xE7\xE3o do curso", 800),
+    turno: optionalText("Turno", 80)
+}).strip();
+var prefessorSchema = z3.object({
+    nome: requiredText("Nome do professor", 1, 120),
+    cargo: optionalText("Cargo do professor", 160),
+    bio: optionalText("Biografia do professor", 800)
+}).strip();
+var depoimentoSchema = z3.object({
+    nome: requiredText("Nome do depoimento", 1,  120),
+     
+})
