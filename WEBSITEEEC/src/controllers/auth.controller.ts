@@ -1,6 +1,6 @@
 import type { Context } from 'hono' // importando o tipo de contexto de hono, um framework igualmente express 
 import { HttpError } from '../errors/http-error'
-import { createHonoSupabaseClient } from './supabase'
+import { createHonoSupabaseClient } from '../lib/supabase'
 import { updateProfileName } from '../repositories/usar.repository'
 import { authenticateWithPasswoed, requestPasswordReset, terminatSession } from '../services/auth.service'
 import { readJsonBody } from '../utils/request'
