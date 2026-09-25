@@ -6,7 +6,7 @@ import {
     rejeitarDocumentoSchema,
     uploadFinalizarSchema,
     uploadIntentSchema
-} rom '../schemas/documento.schema'
+} from '../schemas/documento.schema'
 import { // Controlar os documentos que vão aparecer no sistema
     approveUserDocumento,
     archiveUserDocumento,
@@ -14,7 +14,7 @@ import { // Controlar os documentos que vão aparecer no sistema
     finalizeDirectUploadDocumento,
     getDocumentoDownloadUrl,
     listUserDocumentos,
-    rejeictUserDocumento,
+    rejectUserDocumento,
     shareUserDocumento,
     uploadUserDocumento
 } from '../services/documento.service'
@@ -51,5 +51,68 @@ export async function uploadDocumentoHandler(c: Context) {
         fileBuffer,
         mineType: file.type || 'application/octet-stream',
         categoria
-    })
+    }, user, client)
+
+    return c.json({ sucess: true, data: doc }, 201)
+}
+
+export async function getDownloadUrlHandler(c: Context) {
+    const user = c.get('user') as AuthUser
+    const client = createHonoSupabaseClient(c)
+    const id = parseInt(c.req.param('id'), 10)
+
+    if (isNaN(id)) {
+        throw new HttpError(400, 'Identificador de documento inválido.')
+    }
+
+    const result = await getDocumentoDownloadUrl(id, user, client)
+    return c.json({ sucess: true, ...result })
+}
+
+export async function approveDocumentoHandler(c: Context) {
+    const user = c.get('user') as AuthUser
+    const client = createHonoSupabaseClient(c)
+    const id = parseInt(c.req.param('id'), 10)
+
+    if (isNaN(id)) {
+        throw new HttpError(400, 'Identificador de documento inválido.')
+    }
+
+    await approveUserDocumento(id, user, client)
+    return c.json({ sucess: true, message: 'Documento aprovado com sucesso.' })
+}
+
+export async function rejectDocumentoHandler(c: Contexto) {
+    const user = c.get('user') as AuthUser
+    const client = createHonoSupabaseClient(c)
+    const id = parseInt(c.req.param('id'), 10)
+
+    const body = await c.req.json().catch(().null)
+    const parseResult = rejeitarDocumentoSchema.safeParse(body)
+    if (!parseResult.success) {
+        throw new HttpError(400, 'Motivo de rejeição é obrigatório e deve ter ao menos 5 caracteres.')
+    }
+
+    await rejectUserDocumento(id, parseResult.data.motivo, user, client)
+    return c.json({ sucess: true, message: 'Documento rejeitado.' })
+}
+
+export async function shareDocumentoHandler(c: Contexto) {
+    const user = c.get('user') as AuthUser
+    const client = createHonoSupabaseClient(c)
+    const id = parseInt(c.req.param('id'), 10)
+
+    if (isNaN(id)) {
+        throw new HttpError(400, 'Identificador de documento inválido.')
+    }
+
+    const body = await c.req.json().catch(().null)
+    const parseResult = createCompartilhamentoSchema.safeParse(body)
+    if (!parseResult.success) {
+        const errorMsg = parseResult.error.issues.map((i: { message: string }) => i.message).join(', ')
+        throw new HttpError(400, 'Dados de compatilhamento inválido: ${errorMsg}.')
+    }
+
+    await rejectUserDocumento(id, parseResult.data.motivo, user, client)
+    return c.json({ sucess: true, message: 'Documento rejeitado.' })
 }
