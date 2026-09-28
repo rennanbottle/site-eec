@@ -25,5 +25,4 @@ export async function postLogin(c: Context) { // cria e exporta a função respo
         }
         return c.json({ error: 'Erro ao processor autenticação.'}, 500)
     }
-
 }

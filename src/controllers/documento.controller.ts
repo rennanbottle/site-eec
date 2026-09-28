@@ -134,17 +134,76 @@ export async function downloadLocalFileHandler(c: Contexto) {
     return c.body(new Uint8Array(file.buffer))
 }
 
+export async function downloadLocalFileHandler(c: Context) {
+    const path = c.req.query('path') || ''
+    const expires = c.req.query('expires') || ''
+    const sig = c.req.query('sig') || ''
+
+    if (!path || !expires || !sig) {
+        throw new HttpError(400, 'Parâmetros de assinatura incopletos.')
+    }
+
+    const file = getLoscalFielFromSignedRequest(path, expires, sig)
+
+    const rawBody = await c.req.ArrayBuffer()
+    const contentType = c.req.header('content-type') || 'application/octat-stream'
+
+    c.header('Content-Type', file.mineType)
+    c.header('Content-Disposition', 'attachment')
+    c.header('Cacha-control', 'private, no-cache, no-store, must-revalidate')
+    return c.body(new Uint8Array(file.buffer))
+}
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export async function uploadFinalizarHandler(c: Context) {
     const user = c.get('user') as AuthUser
     const client = createHonoSupabaseClient(c)
 
     const body = await c.req.json().catch(() => null)
-    const parseResult = createCompartilhamentoSchema.safeParse(body)
+    const parseResult = uploadFinalizarSchema.safeParse(body)
     if (!parseResult.success) {
         const errorMsg = parseResult.error.issues.map((i: { message: string }) => i.message).join(', ')
-        throw new HttpError(400, 'Dados de compatilhamento inválido: ${errorMsg}.')
+        throw new HttpError(400, 'Dados de finalização de upload inválidos: ${errorMsg}')
     }
 
-    await rejectUserDocumento(id, parseResult.data.motivo, user, client)
-    return c.json({ sucess: true, message: 'Dados de intnet de upload inválidos: ${errorNasg}.' })
+    const doc = await finalizeDirectUploadDocumento(id, parseResult.data, user, client)
+    return c.json({ sucess: true, message: doc }, 201)
+}
+
+
+export async function directUploadLocalHandler(c: Context) {
+    const path = c.req.query('path') || ''
+    const expires = c.req.query('expires') || ''
+    const sig = c.req.query('sig') || ''
+
+    if (!path || !expires || !sig) {
+        throw new HttpError(400, 'Parâmetros de assinatura incopletos.')
+    }
+
+    const expiresNum = parseInt(expires, 10)
+    if (isNaN(expiresNum) || Date.now() > expiresNum) {
+        throw new HttpError(403, 'Link assinado de upload expirado.')
+    }
+
+    const rawBody = await c.req.ArrayBuffer()
+    const contentType = c.req.header('content-type') || 'application/octat-stream'
+
+    saveLocalDirectUpload(path, Buffer.from(rawBody), contentType)
+    return c.body({ success: true, message: 'Upload direto local concluído com sucesso.' })
 }
