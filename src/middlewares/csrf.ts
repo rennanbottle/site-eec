@@ -1,7 +1,7 @@
 import type { Context, Next } from 'hono'
 import { getEnv } from '../config/env'
 
-const MUTATIVE_METHODOS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']) // Verificar quais site a api pode se comunicar 
+const MUTATIVE_METHODOS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']) // Verificar quais site a api pode se comunicar. Da acesso.
 
 /**
  * Rotas mutativas sem verificação de origim
@@ -23,3 +23,4 @@ const MUTATIVE_METHODOS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']) // Verific
  *      existe, e a rota tem limite de 3 por minuto.
  */
 
+// 2. Sem Drigin, o Referer vale como sinal - 
